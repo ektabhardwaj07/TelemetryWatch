@@ -156,6 +156,212 @@
           "refId": "A"
         }
       ]
+    },
+    {
+      "id": 9,
+      "title": "Error Rate",
+      "type": "stat",
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 24},
+      "targets": [
+        {
+          "expr": "sum(rate(http_errors_total[5m]))",
+          "refId": "A",
+          "legendFormat": "Errors/sec"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 0.1, "color": "yellow"},
+              {"value": 1.0, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Error Breakdown",
+      "type": "piechart",
+      "gridPos": {"h": 8, "w": 9, "x": 6, "y": 24},
+      "targets": [
+        {
+          "expr": "sum(rate(http_errors_total[5m])) by (error_type)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "4xx vs 5xx Errors",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 9, "x": 15, "y": 24},
+      "targets": [
+        {
+          "expr": "sum(rate(http_errors_total{error_type=\"client_error\"}[5m]))",
+          "refId": "A",
+          "legendFormat": "4xx Client Errors"
+        },
+        {
+          "expr": "sum(rate(http_errors_total{error_type=\"server_error\"}[5m]))",
+          "refId": "B",
+          "legendFormat": "5xx Server Errors"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "title": "Database Connection Pool",
+      "type": "stat",
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 32},
+      "targets": [
+        {
+          "expr": "db_pool_size",
+          "refId": "A",
+          "legendFormat": "Pool Size"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0
+        }
+      }
+    },
+    {
+      "id": 13,
+      "title": "Request Payload Size",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 9, "x": 6, "y": 32},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(http_request_size_bytes_bucket[5m])) by (le))",
+          "refId": "A",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_size_bytes_bucket[5m])) by (le))",
+          "refId": "B",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_size_bytes_bucket[5m])) by (le))",
+          "refId": "C",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "title": "Response Payload Size",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 9, "x": 15, "y": 32},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(http_response_size_bytes_bucket[5m])) by (le))",
+          "refId": "A",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_response_size_bytes_bucket[5m])) by (le))",
+          "refId": "B",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_response_size_bytes_bucket[5m])) by (le))",
+          "refId": "C",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "title": "Endpoint Error Rates",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 18, "x": 0, "y": 40},
+      "targets": [
+        {
+          "expr": "sum(rate(http_errors_total[5m])) by (endpoint, error_type)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
+    },
+    {
+      "id": 16,
+      "title": "SLA Violations",
+      "type": "stat",
+      "gridPos": {"h": 8, "w": 6, "x": 18, "y": 40},
+      "targets": [
+        {
+          "expr": "sum(increase(sla_violations_total[5m]))",
+          "refId": "A",
+          "legendFormat": "Violations (5m)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 1, "color": "yellow"},
+              {"value": 10, "color": "red"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 17,
+      "title": "SLA Violations by Endpoint",
+      "type": "bargauge",
+      "gridPos": {"h": 8, "w": 18, "x": 0, "y": 48},
+      "targets": [
+        {
+          "expr": "sum(increase(sla_violations_total[5m])) by (endpoint, sla_type)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "title": "Error Rate by Status Code",
+      "type": "table",
+      "gridPos": {"h": 8, "w": 6, "x": 18, "y": 48},
+      "targets": [
+        {
+          "expr": "sum(rate(http_errors_total[5m])) by (status, error_type)",
+          "refId": "A",
+          "format": "table"
+        }
+      ]
     }
   ],
   "time": {

@@ -37,6 +37,17 @@ async fn main() -> Result<()> {
     );
     info!("Database initialized");
 
+    // Start background task to update metrics
+    let metrics_clone = metrics.clone();
+    let db_clone = database.clone();
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(5));
+        loop {
+            interval.tick().await;
+            update_metrics(&metrics_clone, &db_clone).await;
+        }
+    });
+
     // Create router
     let app = create_router(metrics, database);
 
@@ -48,5 +59,13 @@ async fn main() -> Result<()> {
     axum::serve(listener, app).await?;
 
     Ok(())
+}
+
+async fn update_metrics(metrics: &Arc<Metrics>, db: &Arc<Database>) {
+    // Update database pool metrics
+    let (size, _) = db.get_pool_stats();
+    metrics.db_pool_size.set(size as f64);
+    // Note: sqlx doesn't expose idle/active directly, but we can track via query patterns
+    // For demo, we'll show the configured pool size
 }
 
