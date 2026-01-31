@@ -31,7 +31,8 @@ TelemetryWatch consists of four main components:
 
 - **Metrics Collection**: Prometheus-compatible metrics endpoint
 - **Health Monitoring**: Health and readiness endpoints for Kubernetes
-- **Database Integration**: PostgreSQL for metadata storage
+- **Database Integration**: PostgreSQL for metadata storage (local or Supabase)
+- **Supabase Support**: Optional integration with Supabase managed PostgreSQL
 - **Visualization**: Pre-configured Grafana dashboards
 - **Containerized**: Docker Compose for local development
 - **Kubernetes Ready**: Complete K8s manifests for production deployment
@@ -41,6 +42,7 @@ TelemetryWatch consists of four main components:
 - **For Local Development**:
   - Docker and Docker Compose
   - Rust 1.75+ (if building locally)
+  - (Optional) Supabase account for managed database
 
 - **For Kubernetes Deployment**:
   - Kubernetes cluster (1.20+)
@@ -57,10 +59,27 @@ git clone <repository-url>
 cd TelemetryWatch
 ```
 
-2. Start all services:
-```bash
-docker-compose up -d
-```
+2. **Choose your database option:**
+
+   **Option A: Local PostgreSQL (Default)**
+   ```bash
+   docker-compose up -d
+   ```
+
+   **Option B: Supabase (Optional)**
+   - Create a Supabase project at [supabase.com](https://supabase.com)
+   - Get your connection string from Supabase dashboard (Settings → Database)
+   - Create `.env` file and set `DATABASE_URL` to your Supabase connection string:
+     ```bash
+     cp env.example .env
+     # Edit .env and set DATABASE_URL to your Supabase connection string
+     ```
+   - Start services (PostgreSQL will be skipped):
+     ```bash
+     docker-compose -f docker-compose.yml -f docker-compose.supabase.yml up -d
+     ```
+
+   **Note**: If using Option A, services are already started. For Option B, services start with the command above.
 
 3. Create a `.env` file (optional, for custom passwords):
    ```bash
@@ -74,7 +93,7 @@ docker-compose up -d
    - **Grafana**: http://localhost:3000 (default: admin/admin12345 - **CHANGE IN PRODUCTION!**)
    - **PostgreSQL**: localhost:5432
 
-4. Check service health:
+5. Check service health:
 ```bash
 curl http://localhost:8080/health
 curl http://localhost:8080/ready

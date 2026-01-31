@@ -1,0 +1,24 @@
+# Docker Compose override for using Supabase instead of local PostgreSQL
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.supabase.yml up -d
+#
+# Make sure to set DATABASE_URL in your .env file to your Supabase connection string:
+# DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
+
+version: '3.8'
+
+services:
+  # Disable local PostgreSQL - using Supabase instead
+  postgresql:
+    profiles:
+      - local-db  # Only start if explicitly requested with --profile local-db
+
+  telemetrywatch:
+    # Remove dependency on local PostgreSQL
+    # DATABASE_URL should be set in .env file pointing to Supabase
+    # No depends_on needed - connects directly to Supabase
+
+  grafana:
+    # Remove dependency on local PostgreSQL - override the base depends_on
+    depends_on:
+      prometheus:
+        condition: service_started
