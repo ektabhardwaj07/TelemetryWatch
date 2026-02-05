@@ -38,6 +38,22 @@ impl Default for Config {
             },
             database: DatabaseConfig {
                 url: {
+                    // Debug: Log all database-related environment variables
+                    let all_env_vars: Vec<_> = env::vars()
+                        .filter(|(k, _)| k.contains("DATABASE") || k.contains("POSTGRES") || k.contains("PG"))
+                        .map(|(k, v)| {
+                            let preview = if v.len() > 20 {
+                                format!("{}... (length: {})", &v[..20], v.len())
+                            } else {
+                                format!("{} (length: {})", v, v.len())
+                            };
+                            (k, preview)
+                        })
+                        .collect();
+                    if !all_env_vars.is_empty() {
+                        warn!("Found database-related env vars: {:?}", all_env_vars);
+                    }
+                    
                     // Debug: Check which env vars are available
                     let has_db_url = env::var("DATABASE_URL").is_ok();
                     let has_postgres_url = env::var("POSTGRES_URL").is_ok();
