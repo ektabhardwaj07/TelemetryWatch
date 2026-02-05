@@ -2,6 +2,10 @@
 
 TelemetryWatch is an open-source observability platform for collecting, storing, and visualizing metrics and system telemetry across cloud-native, Kubernetes, and traditional infrastructure. Built on Prometheus, Grafana, and PostgreSQL, TelemetryWatch provides a unified monitoring experience.
 
+**🚀 [Live Demo](#deployment)** - Deploy your own instance on Railway or Render
+
+**🎯 Platform Control Plane** - Manage multiple Supabase OSS projects with a unified control plane
+
 ## Architecture
 
 TelemetryWatch consists of four main components:
@@ -11,20 +15,74 @@ TelemetryWatch consists of four main components:
 - **Grafana**: Visualization and dashboard platform
 - **PostgreSQL**: Metadata and configuration storage
 
+### System Architecture
+
+```mermaid
+graph TB
+    subgraph "TelemetryWatch Platform Control Plane"
+        TW[TelemetryWatch App<br/>Rust Service]
+        WEB[Web UI Dashboard<br/>http://localhost:8080]
+        API[REST API<br/>/api/v1/platform/projects]
+    end
+    
+    subgraph "Observability Stack"
+        PROM[Prometheus<br/>Metrics Collection]
+        GRAF[Grafana<br/>Dashboards & Visualization]
+    end
+    
+    subgraph "Data Storage"
+        PG[(PostgreSQL<br/>Metadata & Config)]
+    end
+    
+    subgraph "Supabase OSS Projects"
+        SUP1[Supabase Project 1<br/>Kong + Postgres + Auth]
+        SUP2[Supabase Project 2<br/>Kong + Postgres + Auth]
+        SUPN[Supabase Project N...]
+    end
+    
+    WEB --> TW
+    API --> TW
+    TW -->|Stores project metadata| PG
+    TW -->|Exposes metrics| PROM
+    PROM -->|Queries metrics| GRAF
+    TW -->|Manages lifecycle| SUP1
+    TW -->|Manages lifecycle| SUP2
+    TW -->|Manages lifecycle| SUPN
+    
+    style TW fill:#667eea,color:#fff
+    style WEB fill:#764ba2,color:#fff
+    style PROM fill:#e6522c,color:#fff
+    style GRAF fill:#f46800,color:#fff
+    style PG fill:#336791,color:#fff
 ```
-┌─────────────────┐
-│  TelemetryWatch │
-│   (Rust App)    │
-└────────┬────────┘
-         │
-         ├─── Exposes /metrics ───> Prometheus
-         │
-         └─── Stores metadata ───> PostgreSQL
-                                      │
-                                      │
-         Grafana <─── Queries ──── Prometheus
-            │
-            └─── Reads config ──── PostgreSQL
+
+### Platform Control Plane Flow
+
+```mermaid
+sequenceDiagram
+    participant Operator
+    participant WebUI as Web UI
+    participant API as TelemetryWatch API
+    participant DB as PostgreSQL
+    participant Metrics as Prometheus
+    participant Supabase as Supabase OSS
+    
+    Operator->>WebUI: Register new project
+    WebUI->>API: POST /api/v1/platform/projects
+    API->>DB: Store project metadata
+    DB-->>API: Project created
+    API-->>WebUI: Project registered
+    
+    Operator->>WebUI: Suspend project
+    WebUI->>API: POST /api/v1/platform/projects/{id}/suspend
+    API->>DB: Update status = 'suspended'
+    DB-->>API: Status updated
+    API->>Supabase: (Future: Enforce suspension)
+    API-->>WebUI: Project suspended
+    
+    API->>Metrics: Expose platform_projects metrics
+    Metrics->>Grafana: Query metrics
+    Grafana->>Operator: Show platform overview
 ```
 
 ## Features
@@ -293,6 +351,80 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Deployment
+
+### Railway Deployment
+
+1. **Install Railway CLI** (optional):
+   ```bash
+   npm i -g @railway/cli
+   ```
+
+2. **Login to Railway**:
+   ```bash
+   railway login
+   ```
+
+3. **Initialize project**:
+   ```bash
+   railway init
+   ```
+
+4. **Add PostgreSQL service**:
+   - Go to Railway dashboard
+   - Click "New" → "Database" → "Add PostgreSQL"
+   - Copy the `DATABASE_URL` from the service variables
+
+5. **Set environment variables**:
+   ```bash
+   railway variables set DATABASE_URL=<your-postgres-url>
+   railway variables set HOST=0.0.0.0
+   railway variables set PORT=$PORT
+   ```
+
+6. **Deploy**:
+   ```bash
+   railway up
+   ```
+
+   Or connect your GitHub repo in Railway dashboard for automatic deployments.
+
+### Render Deployment
+
+1. **Create a new Web Service** on [Render Dashboard](https://dashboard.render.com)
+
+2. **Connect your GitHub repository**
+
+3. **Configure the service**:
+   - **Build Command**: (leave empty, uses Dockerfile)
+   - **Start Command**: `/usr/local/bin/telemetrywatch`
+   - **Environment**: `docker`
+
+4. **Add PostgreSQL database**:
+   - Create a new PostgreSQL database
+   - Copy the `Internal Database URL`
+
+5. **Set environment variables**:
+   - `DATABASE_URL`: Your PostgreSQL connection string
+   - `HOST`: `0.0.0.0`
+   - `PORT`: `$PORT` (Render provides this)
+   - `DATABASE_MAX_CONNECTIONS`: `10`
+   - `METRICS_ENABLED`: `true`
+
+6. **Deploy**: Render will automatically build and deploy from your `render.yaml`
+
+### Environment Variables for Production
+
+Make sure to set these in your hosting platform:
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | ✅ Yes |
+| `HOST` | Server bind address | No (default: `0.0.0.0`) |
+| `PORT` | Server port (usually provided by platform) | ✅ Yes |
+| `DATABASE_MAX_CONNECTIONS` | Max DB connections | No (default: `10`) |
+| `METRICS_ENABLED` | Enable metrics | No (default: `true`) |
 
 ## Support
 
