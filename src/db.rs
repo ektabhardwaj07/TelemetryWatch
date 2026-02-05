@@ -9,17 +9,26 @@ pub struct Database {
 
 impl Database {
     pub async fn new(database_url: &str, max_connections: u32) -> anyhow::Result<Self> {
-        // Validate database URL format
-        if !database_url.starts_with("postgresql://") && !database_url.starts_with("postgres://") {
-            anyhow::bail!("Invalid DATABASE_URL: must start with postgresql:// or postgres://");
-        }
+        // Normalize database URL - Railway might provide it without protocol prefix
+        let normalized_url = if !database_url.starts_with("postgresql://") && !database_url.starts_with("postgres://") {
+            // If it doesn't start with protocol, try adding postgresql://
+            if database_url.contains("@") {
+                format!("postgresql://{}", database_url)
+            } else {
+                // If it's already a full URL but missing protocol, return as-is and let sqlx handle it
+                database_url.to_string()
+            }
+        } else {
+            database_url.to_string()
+        };
         
         let pool = PgPoolOptions::new()
             .max_connections(max_connections)
             .acquire_timeout(Duration::from_secs(10))
-            .connect(database_url)
+            .connect(&normalized_url)
             .await
-            .map_err(|e| anyhow::anyhow!("Failed to connect to database: {}. DATABASE_URL format: {}", e, database_url))?;
+            .map_err(|e| anyhow::anyhow!("Failed to connect to database: {}. DATABASE_URL preview: {}...", e, 
+                if normalized_url.len() > 50 { &normalized_url[..50] } else { &normalized_url }))?;
 
         info!("Connected to PostgreSQL database");
 

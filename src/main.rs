@@ -27,11 +27,21 @@ async fn main() -> Result<()> {
     // Load configuration
     let config = Config::load()?;
     info!("Configuration loaded");
-    info!("Database URL: {} (hidden)", if config.database.url.len() > 20 { 
-        format!("{}...", &config.database.url[..20]) 
-    } else { 
-        "***".to_string() 
-    });
+    // Log first 30 chars and last 10 chars for debugging (without exposing password)
+    let db_url_display = if config.database.url.len() > 40 {
+        format!("{}...{}", 
+            &config.database.url[..30],
+            &config.database.url[config.database.url.len()-10..]
+        )
+    } else {
+        format!("{} (length: {})", 
+            config.database.url.chars().take(30).collect::<String>(),
+            config.database.url.len()
+        )
+    };
+    info!("Database URL preview: {}", db_url_display);
+    info!("Database URL starts with postgresql://: {}", config.database.url.starts_with("postgresql://"));
+    info!("Database URL starts with postgres://: {}", config.database.url.starts_with("postgres://"));
 
     // Initialize metrics
     let metrics = Metrics::new()?;

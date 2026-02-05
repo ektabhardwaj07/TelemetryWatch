@@ -36,8 +36,15 @@ impl Default for Config {
                     .unwrap_or(8080),
             },
             database: DatabaseConfig {
-                url: env::var("DATABASE_URL")
-                    .unwrap_or_else(|_| "postgresql://telemetrywatch:telemetrywatch@localhost:5432/telemetrywatch".to_string()),
+                url: {
+                    // Try multiple environment variable names (Railway might use different ones)
+                    let db_url = env::var("DATABASE_URL")
+                        .or_else(|_| env::var("POSTGRES_URL"))
+                        .or_else(|_| env::var("PGDATABASE_URL"))
+                        .unwrap_or_else(|_| "postgresql://telemetrywatch:telemetrywatch@localhost:5432/telemetrywatch".to_string());
+                    // Trim whitespace that might be accidentally added
+                    db_url.trim().to_string()
+                },
                 max_connections: env::var("DATABASE_MAX_CONNECTIONS")
                     .ok()
                     .and_then(|c| c.parse().ok())
