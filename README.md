@@ -350,7 +350,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## Deployment
 
@@ -377,18 +377,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
    - Copy the `DATABASE_URL` from the service variables
 
 5. **Set environment variables**:
-   ```bash
-   railway variables set DATABASE_URL=<your-postgres-url>
-   railway variables set HOST=0.0.0.0
-   railway variables set PORT=$PORT
-   ```
+   - In Railway dashboard, go to your service → **Variables** tab
+   - Add `DATABASE_PUBLIC_URL` with the value from your PostgreSQL service's `DATABASE_PUBLIC_URL` variable
+   - Or use `DATABASE_URL` with the internal URL (`telemetrywatch-db.railway.internal`)
+   - Railway automatically provides `PORT` - no need to set it manually
+   - Optional: Set `DATABASE_MAX_CONNECTIONS=10` and `METRICS_ENABLED=true`
 
 6. **Deploy**:
-   ```bash
-   railway up
-   ```
-
-   Or connect your GitHub repo in Railway dashboard for automatic deployments.
+   - Railway will automatically deploy when you push to GitHub
+   - Or manually trigger deployment from the Railway dashboard
+   - Your app will be available at `https://your-service-name.up.railway.app`
 
 ### Render Deployment
 
@@ -418,13 +416,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Make sure to set these in your hosting platform:
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | ✅ Yes |
-| `HOST` | Server bind address | No (default: `0.0.0.0`) |
-| `PORT` | Server port (usually provided by platform) | ✅ Yes |
-| `DATABASE_MAX_CONNECTIONS` | Max DB connections | No (default: `10`) |
-| `METRICS_ENABLED` | Enable metrics | No (default: `true`) |
+| Variable | Description | Required | Notes |
+|----------|-------------|----------|-------|
+| `DATABASE_URL` or `DATABASE_PUBLIC_URL` | PostgreSQL connection string | ✅ Yes | Railway provides both - use `DATABASE_PUBLIC_URL` if `DATABASE_URL` is empty |
+| `HOST` | Server bind address | No | Default: `0.0.0.0` |
+| `PORT` | Server port | ✅ Yes | Automatically provided by Railway/Render |
+| `DATABASE_MAX_CONNECTIONS` | Max DB connections | No | Default: `10` |
+| `METRICS_ENABLED` | Enable metrics | No | Default: `true` |
+
+**Note**: For Railway, if `DATABASE_URL` variable reference doesn't work, manually set `DATABASE_PUBLIC_URL` with the connection string from your PostgreSQL service.
 
 ## Support
 
