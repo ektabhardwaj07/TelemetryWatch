@@ -34,6 +34,8 @@ TelemetryWatch consists of four main components:
 - **Database Integration**: PostgreSQL for metadata storage (local or Supabase)
 - **Supabase Support**: Optional integration with Supabase managed PostgreSQL
 - **Platform Control Plane**: Multi-project management for Supabase OSS projects
+  - Web UI dashboard for project management
+  - REST API for programmatic access
   - Register and manage Supabase projects
   - Lifecycle management (active/suspended)
   - Per-project observability and metrics
@@ -92,10 +94,11 @@ cd TelemetryWatch
    ```
 
 4. Access the services:
-   - **TelemetryWatch API**: http://localhost:8080
+   - **TelemetryWatch Web UI**: http://localhost:8080 (Platform Control Plane Dashboard)
+   - **TelemetryWatch API**: http://localhost:8080/api/v1/...
    - **Prometheus**: http://localhost:9090
    - **Grafana**: http://localhost:3000 (default: admin/admin12345 - **CHANGE IN PRODUCTION!**)
-   - **PostgreSQL**: localhost:5432
+   - **PostgreSQL**: localhost:5433 (TelemetryWatch), localhost:5432 (Supabase if running)
 
 5. Check service health:
 ```bash

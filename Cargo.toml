@@ -11,7 +11,7 @@ repository = "https://github.com/ektabhardwaj07/TelemetryWatch"
 # Web framework
 axum = "0.7"
 tokio = { version = "1.35", features = ["full"] }
-tower-http = { version = "0.5", features = ["trace"] }
+tower-http = { version = "0.5", features = ["trace", "fs"] }
 
 # Database
 sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "chrono"] }

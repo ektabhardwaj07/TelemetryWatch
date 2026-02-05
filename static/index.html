@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TelemetryWatch - Platform Control Plane</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+
+        .projects-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .project-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .project-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .project-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-suspended {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .project-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            margin-right: 8px;
+            color: #333;
+        }
+
+        .project-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-suspend {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-suspend:hover {
+            background: #e0a800;
+        }
+
+        .btn-resume {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-resume:hover {
+            background: #218838;
+        }
+
+        .btn-create {
+            background: #667eea;
+            color: white;
+            width: 100%;
+            padding: 12px;
+        }
+
+        .btn-create:hover {
+            background: #5568d3;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .refresh-btn {
+            background: #6c757d;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .refresh-btn:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 TelemetryWatch Platform Control Plane</h1>
+            <p class="subtitle">Manage and monitor your Supabase projects</p>
+        </header>
+
+        <div class="main-content">
+            <div class="projects-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Platform Projects</h2>
+                    <button class="refresh-btn" onclick="loadProjects()">🔄 Refresh</button>
+                </div>
+                <div id="message"></div>
+                <div id="projects-container">
+                    <div class="loading">Loading projects...</div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Register New Project</h2>
+                <form id="create-project-form" onsubmit="createProject(event)">
+                    <div class="form-group">
+                        <label for="name">Project Name</label>
+                        <input type="text" id="name" name="name" required placeholder="My Supabase Project">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="slug">Slug (unique identifier)</label>
+                        <input type="text" id="slug" name="slug" required placeholder="my-project">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="plan">Plan</label>
+                        <select id="plan" name="plan" required>
+                            <option value="dev">Development</option>
+                            <option value="pro">Professional</option>
+                            <option value="enterprise">Enterprise</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="region">Region</label>
+                        <input type="text" id="region" name="region" required placeholder="us-east-1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="db_url">Database URL</label>
+                        <input type="text" id="db_url" name="db_url" required placeholder="postgresql://...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="api_base_url">API Base URL</label>
+                        <input type="text" id="api_base_url" name="api_base_url" required placeholder="http://localhost:8000">
+                    </div>
+
+                    <button type="submit" class="btn-create">Create Project</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        function showMessage(text, type = 'success') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = type;
+            messageDiv.textContent = text;
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        async function loadProjects() {
+            const container = document.getElementById('projects-container');
+            container.innerHTML = '<div class="loading">Loading projects...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/platform/projects`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const projects = await response.json();
+
+                if (projects.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📦</div>
+                            <p>No projects registered yet.</p>
+                            <p style="margin-top: 10px; font-size: 12px;">Use the form on the right to register your first Supabase project.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = projects.map(project => `
+                    <div class="project-card">
+                        <div class="project-header">
+                            <div class="project-name">${escapeHtml(project.name)}</div>
+                            <span class="status-badge status-${project.status}">${project.status}</span>
+                        </div>
+                        <div class="project-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Slug:</span>
+                                <span>${escapeHtml(project.slug)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Plan:</span>
+                                <span>${escapeHtml(project.plan)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Region:</span>
+                                <span>${escapeHtml(project.region)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Created:</span>
+                                <span>${new Date(project.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                        <div class="project-actions">
+                            ${project.status === 'active' 
+                                ? `<button class="btn-suspend" onclick="suspendProject(${project.id})">⏸ Suspend</button>`
+                                : `<button class="btn-resume" onclick="resumeProject(${project.id})">▶ Resume</button>`
+                            }
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                container.innerHTML = `<div class="error">Error loading projects: ${error.message}</div>`;
+                console.error('Error:', error);
+            }
+        }
+
+        async function createProject(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+
+            const projectData = {
+                name: formData.get('name'),
+                slug: formData.get('slug'),
+                plan: formData.get('plan'),
+                region: formData.get('region'),
+                db_url: formData.get('db_url'),
+                api_base_url: formData.get('api_base_url')
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/platform/projects`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(projectData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || `HTTP error! status: ${response.status}`);
+                }
+
+                showMessage('Project created successfully!', 'success');
+                form.reset();
+                loadProjects();
+            } catch (error) {
+                showMessage(`Error creating project: ${error.message}`, 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        async function suspendProject(id) {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/platform/projects/${id}/suspend`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                showMessage('Project suspended successfully!', 'success');
+                loadProjects();
+            } catch (error) {
+                showMessage(`Error suspending project: ${error.message}`, 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        async function resumeProject(id) {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/platform/projects/${id}/resume`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                showMessage('Project resumed successfully!', 'success');
+                loadProjects();
+            } catch (error) {
+                showMessage(`Error resuming project: ${error.message}`, 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load projects on page load
+        loadProjects();
+    </script>
+</body>
+</html>
+

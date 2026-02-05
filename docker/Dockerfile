@@ -31,6 +31,9 @@ WORKDIR /app
 # Copy the binary from builder
 COPY --from=builder /app/target/release/telemetrywatch /usr/local/bin/telemetrywatch
 
+# Copy static files
+COPY static /app/static
+
 # Create non-root user
 RUN useradd -m -u 1000 telemetrywatch && \
     chown -R telemetrywatch:telemetrywatch /app

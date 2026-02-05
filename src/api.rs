@@ -1,12 +1,13 @@
 use axum::{
     extract::{Path, State},
-    http::StatusCode,
+    http::{StatusCode, header},
     middleware,
     response::{IntoResponse, Response},
     routing::{get, post},
     Json, Router,
 };
 use std::sync::Arc;
+use tower_http::services::ServeDir;
 
 use crate::db::Database;
 use crate::metrics::Metrics;
@@ -31,6 +32,8 @@ pub fn create_router(metrics: Arc<Metrics>, db: Arc<Database>) -> Router {
             "/api/v1/platform/projects/:id/resume",
             post(resume_platform_project),
         )
+        .route("/", get(serve_index))
+        .nest_service("/static", ServeDir::new("static"))
         .layer(middleware::from_fn_with_state(
             metrics.clone(),
             metrics_middleware,
@@ -160,6 +163,22 @@ async fn resume_platform_project(
             )
                 .into_response()
         }
+    }
+}
+
+async fn serve_index() -> impl IntoResponse {
+    match tokio::fs::read_to_string("static/index.html").await {
+        Ok(html) => (
+            StatusCode::OK,
+            [(header::CONTENT_TYPE, "text/html")],
+            html,
+        )
+            .into_response(),
+        Err(_) => (
+            StatusCode::NOT_FOUND,
+            "Dashboard not available",
+        )
+            .into_response(),
     }
 }
 
