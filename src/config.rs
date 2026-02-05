@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::env;
+use tracing::warn;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
@@ -37,13 +38,23 @@ impl Default for Config {
             },
             database: DatabaseConfig {
                 url: {
+                    // Debug: Check which env vars are available
+                    let has_db_url = env::var("DATABASE_URL").is_ok();
+                    let has_postgres_url = env::var("POSTGRES_URL").is_ok();
+                    let has_pg_url = env::var("PGDATABASE_URL").is_ok();
+                    let has_db_public_url = env::var("DATABASE_PUBLIC_URL").is_ok();
+                    
                     // Try multiple environment variable names (Railway provides DATABASE_URL for internal connections)
                     // Prefer DATABASE_URL (internal) over DATABASE_PUBLIC_URL (public proxy)
                     let db_url = env::var("DATABASE_URL")
                         .or_else(|_| env::var("POSTGRES_URL"))
                         .or_else(|_| env::var("PGDATABASE_URL"))
                         .or_else(|_| env::var("DATABASE_PUBLIC_URL")) // Fallback to public URL if internal not available
-                        .unwrap_or_else(|_| "postgresql://telemetrywatch:telemetrywatch@localhost:5432/telemetrywatch".to_string());
+                        .unwrap_or_else(|_| {
+                            warn!("No database URL found in environment. Checked: DATABASE_URL={}, POSTGRES_URL={}, PGDATABASE_URL={}, DATABASE_PUBLIC_URL={}. Using default.", 
+                                has_db_url, has_postgres_url, has_pg_url, has_db_public_url);
+                            "postgresql://telemetrywatch:telemetrywatch@localhost:5432/telemetrywatch".to_string()
+                        });
                     // Trim whitespace, newlines, and quotes that might be accidentally added
                     let trimmed = db_url
                         .trim()
@@ -54,6 +65,7 @@ impl Default for Config {
                         .to_string();
                     // Ensure it's not empty
                     if trimmed.is_empty() {
+                        warn!("Database URL is empty after trimming, using default");
                         "postgresql://telemetrywatch:telemetrywatch@localhost:5432/telemetrywatch".to_string()
                     } else {
                         trimmed
