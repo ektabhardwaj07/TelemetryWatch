@@ -27,14 +27,25 @@ async fn main() -> Result<()> {
     // Load configuration
     let config = Config::load()?;
     info!("Configuration loaded");
+    info!("Database URL: {} (hidden)", if config.database.url.len() > 20 { 
+        format!("{}...", &config.database.url[..20]) 
+    } else { 
+        "***".to_string() 
+    });
 
     // Initialize metrics
     let metrics = Metrics::new()?;
     info!("Metrics initialized");
 
     // Initialize database
+    info!("Attempting to connect to database...");
     let database = Arc::new(
-        Database::new(&config.database.url, config.database.max_connections).await?,
+        Database::new(&config.database.url, config.database.max_connections)
+            .await
+            .map_err(|e| {
+                tracing::error!("Database connection failed: {}", e);
+                e
+            })?,
     );
     info!("Database initialized");
 

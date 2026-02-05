@@ -9,11 +9,17 @@ pub struct Database {
 
 impl Database {
     pub async fn new(database_url: &str, max_connections: u32) -> anyhow::Result<Self> {
+        // Validate database URL format
+        if !database_url.starts_with("postgresql://") && !database_url.starts_with("postgres://") {
+            anyhow::bail!("Invalid DATABASE_URL: must start with postgresql:// or postgres://");
+        }
+        
         let pool = PgPoolOptions::new()
             .max_connections(max_connections)
             .acquire_timeout(Duration::from_secs(10))
             .connect(database_url)
-            .await?;
+            .await
+            .map_err(|e| anyhow::anyhow!("Failed to connect to database: {}. DATABASE_URL format: {}", e, database_url))?;
 
         info!("Connected to PostgreSQL database");
 
