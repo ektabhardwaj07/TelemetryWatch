@@ -2,27 +2,59 @@ use crate::db::Database;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use utoipa::ToSchema;
 
-#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow, ToSchema)]
+#[schema(as = PlatformProject)]
 pub struct PlatformProject {
+    /// Unique project identifier
+    #[schema(example = 1)]
     pub id: i64,
+    /// Human-readable project name
+    #[schema(example = "Acme E-commerce Platform")]
     pub name: String,
+    /// URL-friendly project identifier (unique)
+    #[schema(example = "acme-ecommerce")]
     pub slug: String,
+    /// Project status: active or suspended
+    #[schema(example = "active", enum_values = ["active", "suspended"])]
     pub status: String,
+    /// Subscription plan: dev, pro, or enterprise
+    #[schema(example = "pro", enum_values = ["dev", "pro", "enterprise"])]
     pub plan: String,
+    /// Deployment region
+    #[schema(example = "us-east-1")]
     pub region: String,
+    /// PostgreSQL database connection URL
+    #[schema(example = "postgresql://postgres:password@db.example.com:5432/mydb")]
     pub db_url: String,
+    /// Supabase API base URL
+    #[schema(example = "https://api.example.com")]
     pub api_base_url: String,
+    /// Project creation timestamp
     pub created_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, ToSchema)]
+#[schema(as = CreatePlatformProject)]
 pub struct CreatePlatformProject {
+    /// Human-readable project name
+    #[schema(example = "Acme E-commerce Platform")]
     pub name: String,
+    /// URL-friendly project identifier (must be unique)
+    #[schema(example = "acme-ecommerce")]
     pub slug: String,
+    /// Subscription plan: dev, pro, or enterprise
+    #[schema(example = "pro", enum_values = ["dev", "pro", "enterprise"])]
     pub plan: String,
+    /// Deployment region
+    #[schema(example = "us-east-1")]
     pub region: String,
+    /// PostgreSQL database connection URL
+    #[schema(example = "postgresql://postgres:password@db.example.com:5432/mydb")]
     pub db_url: String,
+    /// Supabase API base URL
+    #[schema(example = "https://api.example.com")]
     pub api_base_url: String,
 }
 

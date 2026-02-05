@@ -8,14 +8,54 @@ use axum::{
 };
 use std::sync::Arc;
 use tower_http::services::ServeDir;
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 use crate::db::Database;
 use crate::metrics::Metrics;
 use crate::middleware::metrics_middleware;
 use crate::platform::{CreatePlatformProject, PlatformProject};
 
+#[derive(OpenApi)]
+#[openapi(
+    paths(
+        health,
+        ready,
+        get_metrics,
+        status,
+        list_platform_projects,
+        create_platform_project,
+        suspend_platform_project,
+        resume_platform_project,
+    ),
+    components(schemas(
+        PlatformProject,
+        CreatePlatformProject,
+    )),
+    tags(
+        (name = "Health", description = "Health and readiness endpoints"),
+        (name = "Metrics", description = "Prometheus metrics endpoint"),
+        (name = "Platform", description = "Platform control plane API for managing Supabase projects"),
+    ),
+    info(
+        title = "TelemetryWatch Platform Control Plane API",
+        description = "REST API for managing multiple Supabase OSS projects as a platform provider",
+        version = "1.0.0",
+        contact(
+            name = "TelemetryWatch",
+            url = "https://github.com/ektabhardwaj07/TelemetryWatch",
+        ),
+    ),
+    servers(
+        (url = "http://localhost:8080", description = "Local development"),
+        (url = "https://telemetrywatch-production-22dc.up.railway.app", description = "Railway production"),
+    ),
+)]
+struct ApiDoc;
+
 pub fn create_router(metrics: Arc<Metrics>, db: Arc<Database>) -> Router {
     Router::new()
+        .merge(SwaggerUi::new("/api/docs").url("/api/openapi.json", ApiDoc::openapi()))
         .route("/health", get(health))
         .route("/ready", get(ready))
         .route("/metrics", get(get_metrics))
@@ -47,10 +87,33 @@ pub struct AppState {
     pub db: Arc<Database>,
 }
 
+/// Health check endpoint
+/// 
+/// Returns 200 OK if the service is running.
+#[utoipa::path(
+    get,
+    path = "/health",
+    tag = "Health",
+    responses(
+        (status = 200, description = "Service is healthy", body = String, example = "OK")
+    )
+)]
 async fn health() -> Response {
     (StatusCode::OK, "OK").into_response()
 }
 
+/// Readiness check endpoint
+/// 
+/// Returns 200 OK if the service and database are ready to accept traffic.
+#[utoipa::path(
+    get,
+    path = "/ready",
+    tag = "Health",
+    responses(
+        (status = 200, description = "Service is ready", body = String, example = "Ready"),
+        (status = 503, description = "Service is not ready", body = String, example = "Not Ready")
+    )
+)]
 async fn ready(State(state): State<AppState>) -> Response {
     match state.db.health_check().await {
         Ok(_) => (StatusCode::OK, "Ready").into_response(),
@@ -61,6 +124,17 @@ async fn ready(State(state): State<AppState>) -> Response {
     }
 }
 
+/// Prometheus metrics endpoint
+/// 
+/// Returns metrics in Prometheus format for scraping.
+#[utoipa::path(
+    get,
+    path = "/metrics",
+    tag = "Metrics",
+    responses(
+        (status = 200, description = "Prometheus metrics", content_type = "text/plain")
+    )
+)]
 async fn get_metrics(State(state): State<AppState>) -> Response {
     match state.metrics.gather() {
         Ok(metrics) => (
@@ -76,6 +150,19 @@ async fn get_metrics(State(state): State<AppState>) -> Response {
     }
 }
 
+/// Application status endpoint
+/// 
+/// Returns detailed status including database health and version.
+#[utoipa::path(
+    get,
+    path = "/api/v1/status",
+    tag = "Health",
+    responses(
+        (status = 200, description = "Application status", 
+         content_type = "application/json",
+         body = Object)
+    )
+)]
 async fn status(State(state): State<AppState>) -> Response {
     let db_status = match state.db.health_check().await {
         Ok(_) => "healthy",
@@ -95,6 +182,18 @@ async fn status(State(state): State<AppState>) -> Response {
         .into_response()
 }
 
+/// List all registered Supabase projects
+/// 
+/// Returns a list of all platform projects with their metadata.
+#[utoipa::path(
+    get,
+    path = "/api/v1/platform/projects",
+    tag = "Platform",
+    responses(
+        (status = 200, description = "List of platform projects", body = [PlatformProject]),
+        (status = 500, description = "Internal server error")
+    )
+)]
 async fn list_platform_projects(State(state): State<AppState>) -> impl IntoResponse {
     match state.db.list_platform_projects().await {
         Ok(projects) => (StatusCode::OK, Json(projects)).into_response(),
@@ -109,6 +208,19 @@ async fn list_platform_projects(State(state): State<AppState>) -> impl IntoRespo
     }
 }
 
+/// Register a new Supabase project
+/// 
+/// Creates a new platform project entry with the provided metadata.
+#[utoipa::path(
+    post,
+    path = "/api/v1/platform/projects",
+    tag = "Platform",
+    request_body = CreatePlatformProject,
+    responses(
+        (status = 201, description = "Project created successfully", body = PlatformProject),
+        (status = 500, description = "Failed to create project")
+    )
+)]
 async fn create_platform_project(
     State(state): State<AppState>,
     Json(payload): Json<CreatePlatformProject>,
@@ -126,6 +238,23 @@ async fn create_platform_project(
     }
 }
 
+/// Suspend a platform project
+/// 
+/// Changes the project status to 'suspended'. In production, this would also trigger
+/// actions in the actual Supabase instance.
+#[utoipa::path(
+    post,
+    path = "/api/v1/platform/projects/{id}/suspend",
+    tag = "Platform",
+    params(
+        ("id" = i64, Path, description = "Project ID")
+    ),
+    responses(
+        (status = 200, description = "Project suspended successfully", body = PlatformProject),
+        (status = 404, description = "Project not found"),
+        (status = 500, description = "Failed to suspend project")
+    )
+)]
 async fn suspend_platform_project(
     State(state): State<AppState>,
     Path(id): Path<i64>,
@@ -148,6 +277,23 @@ async fn suspend_platform_project(
     }
 }
 
+/// Resume a suspended platform project
+/// 
+/// Changes the project status from 'suspended' to 'active'. In production, this would
+/// also trigger actions in the actual Supabase instance.
+#[utoipa::path(
+    post,
+    path = "/api/v1/platform/projects/{id}/resume",
+    tag = "Platform",
+    params(
+        ("id" = i64, Path, description = "Project ID")
+    ),
+    responses(
+        (status = 200, description = "Project resumed successfully", body = PlatformProject),
+        (status = 404, description = "Project not found"),
+        (status = 500, description = "Failed to resume project")
+    )
+)]
 async fn resume_platform_project(
     State(state): State<AppState>,
     Path(id): Path<i64>,

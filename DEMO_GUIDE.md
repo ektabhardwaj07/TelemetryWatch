@@ -31,6 +31,7 @@
 - ✅ `POST /api/v1/platform/projects` - Create new project
 - ✅ `POST /api/v1/platform/projects/{id}/suspend` - Suspend project
 - ✅ `POST /api/v1/platform/projects/{id}/resume` - Resume project
+- ✅ **OpenAPI/Swagger Documentation** - Interactive API docs at `/api/docs`
 
 ### 4. **Production-Ready Observability**
 - ✅ **Error Tracking**: HTTP errors by type, status code, endpoint
@@ -108,7 +109,26 @@
 
 ---
 
-### Step 3: Show API Endpoints (2 minutes)
+### Step 3: Show API Documentation (2 minutes)
+
+**Open**: https://telemetrywatch-production-22dc.up.railway.app/api/docs
+
+**Say**:
+> "The platform includes comprehensive API documentation using OpenAPI/Swagger. This shows professional API design and developer experience focus."
+
+**Show**:
+- Interactive Swagger UI
+- All endpoints documented
+- Request/response schemas
+- Try it out functionality
+
+**Highlight**:
+- ✅ Professional API documentation
+- ✅ OpenAPI 3.0 specification
+- ✅ Interactive testing interface
+- ✅ Developer-friendly
+
+### Step 4: Show API Endpoints (1 minute)
 
 **Open**: https://telemetrywatch-production-22dc.up.railway.app/api/v1/platform/projects
 
@@ -127,7 +147,7 @@
 
 ---
 
-### Step 4: Demonstrate Lifecycle Management (2 minutes)
+### Step 5: Demonstrate Lifecycle Management (2 minutes)
 
 **Action**: Click "Suspend" on a project
 
@@ -151,7 +171,7 @@
 
 ---
 
-### Step 5: Show Observability & Metrics (3 minutes)
+### Step 6: Show Observability & Metrics (3 minutes)
 
 **Open**: http://localhost:3000 (Grafana) - if running locally
 **OR**: Explain the metrics architecture
@@ -190,7 +210,7 @@
 
 ---
 
-### Step 6: Explain Architecture (3 minutes)
+### Step 7: Explain Architecture (3 minutes)
 
 **Show**: README.md architecture diagrams
 
@@ -224,7 +244,7 @@
 
 ---
 
-### Step 7: Technical Deep Dive (If Asked)
+### Step 8: Technical Deep Dive (If Asked)
 
 **Topics to cover**:
 
@@ -316,6 +336,7 @@
 ## Quick Reference
 
 - **Live Demo**: https://telemetrywatch-production-22dc.up.railway.app
+- **API Documentation**: https://telemetrywatch-production-22dc.up.railway.app/api/docs
 - **GitHub**: https://github.com/ektabhardwaj07/TelemetryWatch
 - **API Docs**: See README.md API section
 - **Architecture**: See README.md Mermaid diagrams

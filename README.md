@@ -232,6 +232,10 @@ kubectl get svc grafana-service -n telemetrywatch
 
 ## API Endpoints
 
+### API Documentation
+- **Swagger UI**: `GET /api/docs` - Interactive API documentation
+- **OpenAPI Spec**: `GET /api/openapi.json` - OpenAPI 3.0 specification
+
 ### Core Endpoints
 - `GET /health` - Health check endpoint
 - `GET /ready` - Readiness check endpoint (includes database check)
