@@ -370,7 +370,7 @@
       "gridPos": {"h": 8, "w": 6, "x": 0, "y": 56},
       "targets": [
         {
-          "expr": "sum(platform_projects_total{status=\"active\"})",
+          "expr": "sum(platform_projects_total{status=\"active\",job=\"telemetrywatch-railway\"})",
           "refId": "A",
           "legendFormat": "Active Projects"
         }
@@ -389,7 +389,7 @@
       "gridPos": {"h": 8, "w": 9, "x": 6, "y": 56},
       "targets": [
         {
-          "expr": "sum(platform_projects_total) by (status)",
+          "expr": "sum(platform_projects_total{job=\"telemetrywatch-railway\"}) by (status)",
           "refId": "A"
         }
       ]
@@ -401,7 +401,7 @@
       "gridPos": {"h": 8, "w": 9, "x": 15, "y": 56},
       "targets": [
         {
-          "expr": "sum(platform_projects_total) by (plan)",
+          "expr": "sum(platform_projects_total{job=\"telemetrywatch-railway\"}) by (plan)",
           "refId": "A"
         }
       ]
@@ -413,7 +413,7 @@
       "gridPos": {"h": 8, "w": 24, "x": 0, "y": 64},
       "targets": [
         {
-          "expr": "platform_projects",
+          "expr": "platform_projects{job=\"telemetrywatch-railway\"}",
           "refId": "A",
           "format": "table",
           "instant": true

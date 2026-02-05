@@ -102,19 +102,30 @@ async fn update_metrics(metrics: &Arc<Metrics>, db: &Arc<Database>) {
         let mut status_plan_counts: std::collections::HashMap<(String, String), i32> =
             std::collections::HashMap::new();
 
-        // Track which (slug, status, plan, region) combinations we're setting
-        let mut active_combinations = std::collections::HashSet::new();
-
+        // Group projects by slug to reset old statuses
+        let mut projects_by_slug: std::collections::HashMap<String, &crate::platform::PlatformProject> = 
+            std::collections::HashMap::new();
+        
         for project in &projects {
-            let combo = (
-                project.slug.clone(),
-                project.status.clone(),
-                project.plan.clone(),
-                project.region.clone(),
-            );
-            active_combinations.insert(combo.clone());
+            // If we've seen this slug before, reset all its old status combinations
+            if let Some(existing) = projects_by_slug.get(&project.slug) {
+                // Reset old status for this slug
+                metrics
+                    .platform_projects
+                    .with_label_values(&[
+                        &existing.slug,
+                        &existing.status,
+                        &existing.plan,
+                        &existing.region,
+                    ])
+                    .set(0.0);
+            }
+            projects_by_slug.insert(project.slug.clone(), project);
+        }
 
-            // Set individual project gauge (only current status)
+        // Now set current statuses
+        for project in &projects {
+            // Set individual project gauge (current status only)
             metrics
                 .platform_projects
                 .with_label_values(&[
