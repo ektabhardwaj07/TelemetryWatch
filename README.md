@@ -30,14 +30,14 @@ graph TB
         GRAF[Grafana<br/>Dashboards & Visualization]
     end
     
-    subgraph "Data Storage"
-        PG[(PostgreSQL<br/>Metadata & Config)]
+    subgraph "TelemetryWatch Data Storage"
+        PG[(PostgreSQL<br/>Project Metadata<br/>& Config)]
     end
     
-    subgraph "Supabase OSS Projects"
-        SUP1[Supabase Project 1<br/>Kong + Postgres + Auth]
-        SUP2[Supabase Project 2<br/>Kong + Postgres + Auth]
-        SUPN[Supabase Project N...]
+    subgraph "Supabase OSS Projects (Tenants)"
+        SUP1[Supabase Project 1<br/>Kong + Postgres + Auth<br/>+ Project DB]
+        SUP2[Supabase Project 2<br/>Kong + Postgres + Auth<br/>+ Project DB]
+        SUPN[Supabase Project N...<br/>Each with own Postgres]
     end
     
     WEB --> TW
@@ -89,8 +89,8 @@ sequenceDiagram
 
 - **Metrics Collection**: Prometheus-compatible metrics endpoint with comprehensive observability
 - **Health Monitoring**: Health and readiness endpoints for Kubernetes
-- **Database Integration**: PostgreSQL for metadata storage (local or Supabase)
-- **Supabase Support**: Optional integration with Supabase managed PostgreSQL
+- **Database Integration**: PostgreSQL for storing platform project metadata (can use Supabase PostgreSQL or standalone)
+- **Supabase Support**: Can use Supabase's managed PostgreSQL as TelemetryWatch's database, while managing multiple Supabase OSS project instances
 - **Platform Control Plane**: Multi-project management for Supabase OSS projects
   - Web UI dashboard for project management
   - REST API for programmatic access
