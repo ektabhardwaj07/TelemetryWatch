@@ -31,7 +31,7 @@
 - ✅ `POST /api/v1/platform/projects` - Create new project
 - ✅ `POST /api/v1/platform/projects/{id}/suspend` - Suspend project
 - ✅ `POST /api/v1/platform/projects/{id}/resume` - Resume project
-- ✅ **OpenAPI/Swagger Documentation** - Interactive API docs at `/api/docs`
+- ✅ **OpenAPI/Swagger Documentation** - Interactive API docs at `/api/docs/` (trailing slash required)
 
 ### 4. **Production-Ready Observability**
 - ✅ **Error Tracking**: HTTP errors by type, status code, endpoint
@@ -111,7 +111,7 @@
 
 ### Step 3: Show API Documentation (2 minutes)
 
-**Open**: https://telemetrywatch-production-22dc.up.railway.app/api/docs
+**Open**: https://telemetrywatch-production-22dc.up.railway.app/api/docs/
 
 **Say**:
 > "The platform includes comprehensive API documentation using OpenAPI/Swagger. This shows professional API design and developer experience focus."
@@ -336,7 +336,7 @@
 ## Quick Reference
 
 - **Live Demo**: https://telemetrywatch-production-22dc.up.railway.app
-- **API Documentation**: https://telemetrywatch-production-22dc.up.railway.app/api/docs
+- **API Documentation**: https://telemetrywatch-production-22dc.up.railway.app/api/docs/
 - **GitHub**: https://github.com/ektabhardwaj07/TelemetryWatch
 - **API Docs**: See README.md API section
 - **Architecture**: See README.md Mermaid diagrams

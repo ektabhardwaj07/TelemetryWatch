@@ -17,10 +17,10 @@ pub struct PlatformProject {
     #[schema(example = "acme-ecommerce")]
     pub slug: String,
     /// Project status: active or suspended
-    #[schema(example = "active", enum_values = ["active", "suspended"])]
+    #[schema(example = "active")]
     pub status: String,
     /// Subscription plan: dev, pro, or enterprise
-    #[schema(example = "pro", enum_values = ["dev", "pro", "enterprise"])]
+    #[schema(example = "pro")]
     pub plan: String,
     /// Deployment region
     #[schema(example = "us-east-1")]
@@ -45,7 +45,7 @@ pub struct CreatePlatformProject {
     #[schema(example = "acme-ecommerce")]
     pub slug: String,
     /// Subscription plan: dev, pro, or enterprise
-    #[schema(example = "pro", enum_values = ["dev", "pro", "enterprise"])]
+    #[schema(example = "pro")]
     pub plan: String,
     /// Deployment region
     #[schema(example = "us-east-1")]

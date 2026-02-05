@@ -36,5 +36,5 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # OpenAPI/Swagger documentation
 utoipa = { version = "4.2", features = ["axum_extras", "chrono"] }
-utoipa-swagger-ui = { version = "6.0", features = ["axum", "chrono"] }
+utoipa-swagger-ui = { version = "6.0", features = ["axum"] }
 

@@ -153,6 +153,7 @@ cd TelemetryWatch
 
 4. Access the services:
    - **TelemetryWatch Web UI**: http://localhost:8080 (Platform Control Plane Dashboard)
+   - **TelemetryWatch API Docs**: http://localhost:8080/api/docs/ (Interactive Swagger UI)
    - **TelemetryWatch API**: http://localhost:8080/api/v1/...
    - **Prometheus**: http://localhost:9090
    - **Grafana**: http://localhost:3000 (default: admin/admin12345 - **CHANGE IN PRODUCTION!**)
@@ -233,7 +234,9 @@ kubectl get svc grafana-service -n telemetrywatch
 ## API Endpoints
 
 ### API Documentation
-- **Swagger UI**: `GET /api/docs` - Interactive API documentation
+- **Swagger UI**: `GET /api/docs/` - Interactive API documentation (note: trailing slash required)
+  - Local: http://localhost:8080/api/docs/
+  - Railway: https://telemetrywatch-production-22dc.up.railway.app/api/docs/
 - **OpenAPI Spec**: `GET /api/openapi.json` - OpenAPI 3.0 specification
 
 ### Core Endpoints

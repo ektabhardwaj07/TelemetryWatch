@@ -95,7 +95,7 @@ pub struct AppState {
     path = "/health",
     tag = "Health",
     responses(
-        (status = 200, description = "Service is healthy", body = String, example = "OK")
+        (status = 200, description = "Service is healthy", content_type = "text/plain", example = "OK")
     )
 )]
 async fn health() -> Response {
@@ -110,8 +110,8 @@ async fn health() -> Response {
     path = "/ready",
     tag = "Health",
     responses(
-        (status = 200, description = "Service is ready", body = String, example = "Ready"),
-        (status = 503, description = "Service is not ready", body = String, example = "Not Ready")
+        (status = 200, description = "Service is ready", content_type = "text/plain", example = "Ready"),
+        (status = 503, description = "Service is not ready", content_type = "text/plain", example = "Not Ready")
     )
 )]
 async fn ready(State(state): State<AppState>) -> Response {
