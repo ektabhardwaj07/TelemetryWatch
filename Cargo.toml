@@ -2,6 +2,10 @@
 name = "telemetrywatch"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+authors = ["TelemetryWatch Contributors"]
+description = "Open-source observability platform with platform control plane for Supabase projects"
+repository = "https://github.com/ektabhardwaj07/TelemetryWatch"
 
 [dependencies]
 # Web framework
