@@ -26,6 +26,9 @@ pub struct Metrics {
     pub endpoint_error_rate: GaugeVec,
     // SLA compliance tracking
     pub sla_violations_total: IntCounterVec,
+    // Platform projects metrics
+    pub platform_projects: GaugeVec,
+    pub platform_projects_total: GaugeVec,
 }
 
 impl Metrics {
@@ -152,6 +155,25 @@ impl Metrics {
         )?;
         registry.register(Box::new(sla_violations_total.clone()))?;
 
+        // Platform projects metrics
+        let platform_projects = GaugeVec::new(
+            Opts::new(
+                "platform_projects",
+                "Platform project status (1 = exists, 0 = doesn't exist)",
+            ),
+            &["slug", "status", "plan", "region"],
+        )?;
+        registry.register(Box::new(platform_projects.clone()))?;
+
+        let platform_projects_total = GaugeVec::new(
+            Opts::new(
+                "platform_projects_total",
+                "Total number of platform projects",
+            ),
+            &["status", "plan"],
+        )?;
+        registry.register(Box::new(platform_projects_total.clone()))?;
+
         Ok(Arc::new(Self {
             registry,
             http_requests_total,
@@ -169,6 +191,8 @@ impl Metrics {
             http_response_size_bytes,
             endpoint_error_rate,
             sla_violations_total,
+            platform_projects,
+            platform_projects_total,
         }))
     }
 

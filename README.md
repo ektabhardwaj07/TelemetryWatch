@@ -29,11 +29,15 @@ TelemetryWatch consists of four main components:
 
 ## Features
 
-- **Metrics Collection**: Prometheus-compatible metrics endpoint
+- **Metrics Collection**: Prometheus-compatible metrics endpoint with comprehensive observability
 - **Health Monitoring**: Health and readiness endpoints for Kubernetes
 - **Database Integration**: PostgreSQL for metadata storage (local or Supabase)
 - **Supabase Support**: Optional integration with Supabase managed PostgreSQL
-- **Visualization**: Pre-configured Grafana dashboards
+- **Platform Control Plane**: Multi-project management for Supabase OSS projects
+  - Register and manage Supabase projects
+  - Lifecycle management (active/suspended)
+  - Per-project observability and metrics
+- **Visualization**: Pre-configured Grafana dashboards with platform overview
 - **Containerized**: Docker Compose for local development
 - **Kubernetes Ready**: Complete K8s manifests for production deployment
 
@@ -167,10 +171,27 @@ kubectl get svc grafana-service -n telemetrywatch
 
 ## API Endpoints
 
+### Core Endpoints
 - `GET /health` - Health check endpoint
 - `GET /ready` - Readiness check endpoint (includes database check)
 - `GET /metrics` - Prometheus metrics endpoint
 - `GET /api/v1/status` - Application status with database health
+
+### Platform Control Plane API
+- `GET /api/v1/platform/projects` - List all registered Supabase projects
+- `POST /api/v1/platform/projects` - Register a new Supabase project
+  ```json
+  {
+    "name": "Project Name",
+    "slug": "project-slug",
+    "plan": "dev|pro|enterprise",
+    "region": "us-east-1",
+    "db_url": "postgresql://...",
+    "api_base_url": "http://..."
+  }
+  ```
+- `POST /api/v1/platform/projects/{id}/suspend` - Suspend a project
+- `POST /api/v1/platform/projects/{id}/resume` - Resume a suspended project
 
 ## Configuration
 
@@ -190,13 +211,15 @@ Configuration is managed through environment variables:
 TelemetryWatch/
 ├── src/
 │   ├── main.rs          # Application entry point
-│   ├── api.rs           # HTTP API routes
+│   ├── api.rs           # HTTP API routes (including platform control plane)
 │   ├── config.rs        # Configuration management
-│   ├── db.rs            # PostgreSQL integration
-│   └── metrics.rs       # Prometheus metrics
+│   ├── db.rs            # PostgreSQL integration and schema
+│   ├── metrics.rs       # Prometheus metrics definitions
+│   ├── middleware.rs    # HTTP middleware for metrics collection
+│   └── platform.rs      # Platform control plane (Supabase project management)
 ├── config/
 │   ├── prometheus.yml   # Prometheus configuration
-│   └── grafana/         # Grafana provisioning
+│   └── grafana/         # Grafana provisioning and dashboards
 ├── docker/
 │   └── Dockerfile       # Application container
 ├── k8s/                 # Kubernetes manifests
@@ -234,11 +257,27 @@ cargo clippy
 
 TelemetryWatch exposes the following Prometheus metrics:
 
+### HTTP Metrics
 - `http_requests_total` - Total HTTP requests (labeled by method, endpoint, status)
 - `http_request_duration_seconds` - HTTP request duration (labeled by method, endpoint)
-- `active_connections` - Number of active connections
+- `http_errors_total` - HTTP errors (labeled by method, endpoint, status, error_type)
+- `http_request_size_bytes` - Request payload size (labeled by method, endpoint)
+- `http_response_size_bytes` - Response payload size (labeled by method, endpoint, status)
+- `sla_violations_total` - SLA violations (labeled by endpoint, sla_type)
+
+### Database Metrics
 - `database_queries_total` - Total database queries
 - `database_query_duration_seconds` - Database query duration
+- `db_pool_size` - Database connection pool size
+- `db_pool_idle` - Idle connections in pool
+- `db_pool_active` - Active connections in pool
+
+### Platform Metrics
+- `platform_projects` - Platform project status (labeled by slug, status, plan, region)
+- `platform_projects_total` - Total projects by status and plan
+
+### System Metrics
+- `active_connections` - Number of active HTTP connections
 
 ## Contributing
 

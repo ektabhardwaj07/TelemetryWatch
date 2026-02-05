@@ -67,6 +67,24 @@ impl Database {
         .execute(pool)
         .await?;
 
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS platform_projects (
+                id BIGSERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                slug VARCHAR(255) NOT NULL UNIQUE,
+                status VARCHAR(50) NOT NULL DEFAULT 'active',
+                plan VARCHAR(50) NOT NULL DEFAULT 'dev',
+                region VARCHAR(100) NOT NULL,
+                db_url TEXT NOT NULL,
+                api_base_url TEXT NOT NULL,
+                created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            "#,
+        )
+        .execute(pool)
+        .await?;
+
         info!("Database schema initialized");
         Ok(())
     }

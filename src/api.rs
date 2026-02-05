@@ -1,16 +1,17 @@
 use axum::{
-    extract::State,
+    extract::{Path, State},
     http::StatusCode,
     middleware,
     response::{IntoResponse, Response},
-    routing::get,
-    Router,
+    routing::{get, post},
+    Json, Router,
 };
 use std::sync::Arc;
 
 use crate::db::Database;
 use crate::metrics::Metrics;
 use crate::middleware::metrics_middleware;
+use crate::platform::{CreatePlatformProject, PlatformProject};
 
 pub fn create_router(metrics: Arc<Metrics>, db: Arc<Database>) -> Router {
     Router::new()
@@ -18,6 +19,18 @@ pub fn create_router(metrics: Arc<Metrics>, db: Arc<Database>) -> Router {
         .route("/ready", get(ready))
         .route("/metrics", get(get_metrics))
         .route("/api/v1/status", get(status))
+        .route(
+            "/api/v1/platform/projects",
+            get(list_platform_projects).post(create_platform_project),
+        )
+        .route(
+            "/api/v1/platform/projects/:id/suspend",
+            post(suspend_platform_project),
+        )
+        .route(
+            "/api/v1/platform/projects/:id/resume",
+            post(resume_platform_project),
+        )
         .layer(middleware::from_fn_with_state(
             metrics.clone(),
             metrics_middleware,
@@ -65,7 +78,6 @@ async fn status(State(state): State<AppState>) -> Response {
         Ok(_) => "healthy",
         Err(_) => "unhealthy",
     };
-
     let response = serde_json::json!({
         "status": "operational",
         "database": db_status,
@@ -79,4 +91,76 @@ async fn status(State(state): State<AppState>) -> Response {
     )
         .into_response()
 }
+
+async fn list_platform_projects(State(state): State<AppState>) -> impl IntoResponse {
+    match state.db.list_platform_projects().await {
+        Ok(projects) => (StatusCode::OK, Json(projects)).into_response(),
+        Err(e) => {
+            tracing::error!("Failed to list platform projects: {}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to list platform projects",
+            )
+                .into_response()
+        }
+    }
+}
+
+async fn create_platform_project(
+    State(state): State<AppState>,
+    Json(payload): Json<CreatePlatformProject>,
+) -> impl IntoResponse {
+    match state.db.create_platform_project(payload).await {
+        Ok(project) => (StatusCode::CREATED, Json(project)).into_response(),
+        Err(e) => {
+            tracing::error!("Failed to create platform project: {}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to create platform project",
+            )
+                .into_response()
+        }
+    }
+}
+
+async fn suspend_platform_project(
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+) -> impl IntoResponse {
+    match state
+        .db
+        .update_platform_project_status(id, "suspended")
+        .await
+    {
+        Ok(Some(project)) => (StatusCode::OK, Json(project)).into_response(),
+        Ok(None) => (StatusCode::NOT_FOUND, "Project not found").into_response(),
+        Err(e) => {
+            tracing::error!("Failed to suspend platform project {}: {}", id, e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to suspend platform project",
+            )
+                .into_response()
+        }
+    }
+}
+
+async fn resume_platform_project(
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+) -> impl IntoResponse {
+    match state.db.update_platform_project_status(id, "active").await {
+        Ok(Some(project)) => (StatusCode::OK, Json(project)).into_response(),
+        Ok(None) => (StatusCode::NOT_FOUND, "Project not found").into_response(),
+        Err(e) => {
+            tracing::error!("Failed to resume platform project {}: {}", id, e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to resume platform project",
+            )
+                .into_response()
+        }
+    }
+}
+
 

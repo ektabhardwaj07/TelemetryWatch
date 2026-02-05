@@ -362,6 +362,71 @@
           "format": "table"
         }
       ]
+    },
+    {
+      "id": 19,
+      "title": "Active Platform Projects",
+      "type": "stat",
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 56},
+      "targets": [
+        {
+          "expr": "sum(platform_projects_total{status=\"active\"})",
+          "refId": "A",
+          "legendFormat": "Active Projects"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0
+        }
+      }
+    },
+    {
+      "id": 20,
+      "title": "Platform Projects by Status",
+      "type": "piechart",
+      "gridPos": {"h": 8, "w": 9, "x": 6, "y": 56},
+      "targets": [
+        {
+          "expr": "sum(platform_projects_total) by (status)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "title": "Platform Projects by Plan",
+      "type": "bargauge",
+      "gridPos": {"h": 8, "w": 9, "x": 15, "y": 56},
+      "targets": [
+        {
+          "expr": "sum(platform_projects_total) by (plan)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Platform Projects List",
+      "type": "table",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 64},
+      "targets": [
+        {
+          "expr": "platform_projects",
+          "refId": "A",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "displayMode": "list",
+            "inspect": false
+          }
+        }
+      }
     }
   ],
   "time": {

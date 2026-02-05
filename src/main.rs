@@ -3,6 +3,7 @@ mod config;
 mod db;
 mod metrics;
 mod middleware;
+mod platform;
 
 use anyhow::Result;
 use std::sync::Arc;
@@ -67,5 +68,66 @@ async fn update_metrics(metrics: &Arc<Metrics>, db: &Arc<Database>) {
     metrics.db_pool_size.set(size as f64);
     // Note: sqlx doesn't expose idle/active directly, but we can track via query patterns
     // For demo, we'll show the configured pool size
+
+    // Update platform projects metrics
+    if let Ok(projects) = db.list_platform_projects().await {
+        // Reset all platform_projects gauges to 0 first
+        // We need to reset all possible label combinations, but Prometheus doesn't expose
+        // a way to iterate over existing labels. Instead, we'll reset the totals and
+        // only set gauges for current projects (old statuses will remain but that's okay
+        // as long as we're consistent)
+
+        // Count projects by status and plan
+        let mut status_plan_counts: std::collections::HashMap<(String, String), i32> =
+            std::collections::HashMap::new();
+
+        // Track which (slug, status, plan, region) combinations we're setting
+        let mut active_combinations = std::collections::HashSet::new();
+
+        for project in &projects {
+            let combo = (
+                project.slug.clone(),
+                project.status.clone(),
+                project.plan.clone(),
+                project.region.clone(),
+            );
+            active_combinations.insert(combo.clone());
+
+            // Set individual project gauge (only current status)
+            metrics
+                .platform_projects
+                .with_label_values(&[
+                    &project.slug,
+                    &project.status,
+                    &project.plan,
+                    &project.region,
+                ])
+                .set(1.0);
+
+            // Count for totals
+            let key = (project.status.clone(), project.plan.clone());
+            *status_plan_counts.entry(key).or_insert(0) += 1;
+        }
+
+        // Reset totals to 0 first, then set current counts
+        // Note: We can't easily reset all label combinations, but we can reset totals
+        // by setting all known combinations to 0, then setting current ones
+        for status in &["active", "suspended"] {
+            for plan in &["dev", "pro", "enterprise"] {
+                metrics
+                    .platform_projects_total
+                    .with_label_values(&[status, plan])
+                    .set(0.0);
+            }
+        }
+
+        // Set current total counts
+        for ((status, plan), count) in status_plan_counts {
+            metrics
+                .platform_projects_total
+                .with_label_values(&[&status, &plan])
+                .set(count as f64);
+        }
+    }
 }
 

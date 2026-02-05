@@ -7,18 +7,18 @@
 version: '3.8'
 
 services:
-  # Disable local PostgreSQL - using Supabase instead
+  # Keep the local PostgreSQL service defined (so base compose `depends_on` is satisfied),
+  # but remove host port publishing to avoid clashing with Supabase's Postgres on :5432.
   postgresql:
-    profiles:
-      - local-db  # Only start if explicitly requested with --profile local-db
+    ports: []
 
   telemetrywatch:
     # Remove dependency on local PostgreSQL
     # DATABASE_URL should be set in .env file pointing to Supabase
     # No depends_on needed - connects directly to Supabase
+    depends_on: []
 
   grafana:
     # Remove dependency on local PostgreSQL - override the base depends_on
     depends_on:
-      prometheus:
-        condition: service_started
+      - prometheus
