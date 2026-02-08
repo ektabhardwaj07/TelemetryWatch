@@ -2,7 +2,7 @@
 
 TelemetryWatch is an open-source observability platform for collecting, storing, and visualizing metrics and system telemetry across cloud-native, Kubernetes, and traditional infrastructure. Built on Prometheus, Grafana, and PostgreSQL, TelemetryWatch provides a unified monitoring experience.
 
-**🚀 [Live Demo](#deployment)** - Deploy your own instance on Railway or Render
+**🚀 [Live Demo](https://telemetrywatch-production-22dc.up.railway.app)** - Try it now! | [API Docs](https://telemetrywatch-production-22dc.up.railway.app/api/docs/) | [Deploy Your Own](#deployment)
 
 **🎯 Platform Control Plane** - Manage multiple Supabase OSS projects with a unified control plane
 
